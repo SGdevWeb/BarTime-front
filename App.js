@@ -1,43 +1,64 @@
 import React, { useState } from 'react';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
-import { View, Button, StyleSheet } from 'react-native';
-import BarmanScreen from './src/screens/BarmanScreen';
-import UserScreen from './src/screens/UserScreen';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Provider as PaperProvider } from 'react-native-paper';
 import { NavigationContainer } from '@react-navigation/native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+
+import LoginScreen from './src/screens/LoginScreen';
+import RegisterScreen from './src/screens/RegisterScreen';
+import MainLayout from './src/layouts/MainLayout'; // wrapper BarmanLayout/UserLayout
+import { View } from 'react-native';
 
 export default function App() {
-  const [isBarman, setIsBarman] = useState(false);
+  const [user, setUser] = useState(null);
+  const [showRegister, setShowRegister] = useState(false);
+
+  const handleLoginSuccess = data => setUser(data);
+
+  const handleLogout = async () => {
+    setUser(null);
+  };
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <AppContent isBarman={isBarman} setIsBarman={setIsBarman} />
-      </NavigationContainer>
+      <PaperProvider
+        settings={{
+          icon: props => <MaterialCommunityIcons {...props} />,
+        }}
+      >
+        <NavigationContainer>
+          <AppContent
+            user={user}
+            showRegister={showRegister}
+            setShowRegister={setShowRegister}
+            onLoginSuccess={handleLoginSuccess}
+            onLogout={handleLogout}
+          />
+        </NavigationContainer>
+      </PaperProvider>
     </SafeAreaProvider>
   );
 }
 
-function AppContent({ isBarman, setIsBarman }) {
-  const insets = useSafeAreaInsets();
-
-  return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Button
-        title={isBarman ? 'Passer à User' : 'Passer à Barman'}
-        onPress={() => setIsBarman(!isBarman)}
+function AppContent({
+  user,
+  showRegister,
+  setShowRegister,
+  onLoginSuccess,
+  onLogout,
+}) {
+  // Si pas connecté → login/register
+  if (!user) {
+    return showRegister ? (
+      <RegisterScreen onRegisterSuccess={onLoginSuccess} />
+    ) : (
+      <LoginScreen
+        onLoginSuccess={onLoginSuccess}
+        onNavigateToRegister={() => setShowRegister(true)}
       />
-      {isBarman ? <BarmanScreen /> : <UserScreen />}
-    </View>
-  );
-}
+    );
+  }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 4,
-    backgroundColor: '#fff',
-  },
-});
+  // Si connecté → layout principal avec header + contenu + bottom navigation
+  return <MainLayout user={user} onLogout={onLogout} />;
+}
