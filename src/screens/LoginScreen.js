@@ -4,12 +4,12 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   StyleSheet,
   Alert,
   TouchableOpacity,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Button } from 'react-native-paper';
 
 export default function LoginScreen({ onLoginSuccess, onNavigateToRegister }) {
   const [username, setUsername] = useState('');
@@ -57,11 +57,20 @@ export default function LoginScreen({ onLoginSuccess, onNavigateToRegister }) {
         secureTextEntry
         style={styles.input}
       />
-      <Button title="Se connecter" onPress={handleLogin} />
+      <Button
+        mode="contained"
+        onPress={handleLogin}
+        style={{ borderRadius: 10, backgroundColor: '#457b9d' }}
+      >
+        Se connecter
+      </Button>
 
       <TouchableOpacity onPress={onNavigateToRegister}>
         <Text style={styles.registerLink}>
-          Pas encore inscrit ? Crée un compte
+          Pas encore inscrit ?{' '}
+          <Text style={{ textDecorationLine: 'underline' }}>
+            Crée un compte
+          </Text>
         </Text>
       </TouchableOpacity>
     </View>
@@ -88,7 +97,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   registerLink: {
-    color: 'blue',
+    color: '#333',
     marginTop: 16,
     textAlign: 'center',
   },

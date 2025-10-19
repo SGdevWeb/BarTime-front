@@ -6,8 +6,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
-import MainLayout from './src/layouts/MainLayout'; // wrapper BarmanLayout/UserLayout
-import { View } from 'react-native';
+import MainLayout from './src/layouts/MainLayout';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -50,7 +49,10 @@ function AppContent({
   // Si pas connecté → login/register
   if (!user) {
     return showRegister ? (
-      <RegisterScreen onRegisterSuccess={onLoginSuccess} />
+      <RegisterScreen
+        onRegisterSuccess={onLoginSuccess}
+        onNavigateToLogin={() => setShowRegister(false)}
+      />
     ) : (
       <LoginScreen
         onLoginSuccess={onLoginSuccess}

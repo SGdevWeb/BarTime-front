@@ -137,7 +137,12 @@ export default function BarmanLayout({ onLogout }) {
         }}
         activeColor="#e63946"
         inactiveColor="#555"
-        barStyle={{ backgroundColor: '#fff', height: 70 }}
+        barStyle={{
+          backgroundColor: '#fff',
+          height: 70,
+          marginBottom: 5,
+          marginHorizontal: 15,
+        }}
       />
     </View>
   );

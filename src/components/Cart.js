@@ -63,8 +63,6 @@ export default function Cart({ cart, removeFromCart, clearCart }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🛒 Votre Panier</Text>
-
       {items.length === 0 ? (
         <Text style={styles.empty}>Votre panier est vide.</Text>
       ) : (
