@@ -5,7 +5,7 @@ import UserLayout from './UserLayout';
 
 export default function MainLayout({ user, onLogout }) {
   if (user.role === 'association') {
-    return <BarmanLayout onLogout={onLogout} />;
+    return <BarmanLayout onLogout={onLogout} user={user} />;
   } else {
     return <UserLayout onLogout={onLogout} />;
   }

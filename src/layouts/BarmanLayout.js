@@ -10,7 +10,7 @@ import Cart from '../components/Cart';
 import NFCComponent from '../components/NFCComponent';
 import SettingsStack from '../components/SettingsStack'; // contient Settings + sous-écrans
 
-export default function BarmanLayout({ onLogout }) {
+export default function BarmanLayout({ onLogout, user }) {
   const insets = useSafeAreaInsets();
   const [index, setIndex] = React.useState(0);
 
@@ -62,7 +62,9 @@ export default function BarmanLayout({ onLogout }) {
           <Cart
             cart={cart}
             removeFromCart={removeFromCart}
+            addToCart={addToCart}
             clearCart={clearCart}
+            user={user}
           />
         );
       case 'settings':

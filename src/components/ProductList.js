@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,29 +6,15 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-
-const PRODUCTS = [
-  { id: '1', name: 'Leffe blonde', price: 3, category: 'Bières' },
-  { id: '2', name: 'Bière de Noel', price: 3.5, category: 'Bières' },
-  { id: '3', name: 'Jupiler', price: 3.5, category: 'Bières' },
-  { id: '4', name: 'Jenlain ambré', price: 3.5, category: 'Bières' },
-  { id: '5', name: 'Coca', price: 2, category: 'Sodas' },
-  { id: '6', name: 'Orangina', price: 2, category: 'Sodas' },
-  { id: '7', name: 'Oasis', price: 2, category: 'Sodas' },
-  { id: '8', name: 'Eau', price: 2, category: 'Sodas' },
-  { id: '9', name: 'Vin rouge', price: 4, category: 'Vins' },
-  { id: '10', name: 'Vin blanc', price: 4, category: 'Vins' },
-  { id: '11', name: 'Rosé', price: 4, category: 'Vins' },
-  { id: '12', name: 'Pastis', price: 3, category: 'Apéritif' },
-  { id: '13', name: 'Chips', price: 1.5, category: 'Autres' },
-  { id: '14', name: 'Snikers', price: 1.5, category: 'Autres' },
-];
+import { productService } from '../services/api/products';
 
 const groupByCategory = arr => {
   const categories = {};
   arr.forEach(item => {
-    if (!categories[item.category]) categories[item.category] = [];
-    categories[item.category].push(item);
+    // ⚠️ IMPORTANT : item.category est un objet {id, name} venant du backend
+    const categoryName = item.category?.name || 'Autres';
+    if (!categories[categoryName]) categories[categoryName] = [];
+    categories[categoryName].push(item);
   });
   return Object.keys(categories).map(key => ({
     title: key,
@@ -37,12 +23,49 @@ const groupByCategory = arr => {
 };
 
 export default function ProductList({ cart, addToCart, removeFromCart }) {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await productService.getAll();
+
+      if (response.success) {
+        setProducts(response.data); // ✅ Mettre à jour l'état
+      } else {
+        throw new Error('Erreur lors du chargement');
+      }
+    } catch (err) {
+      console.error('Erreur:', err);
+      Alert.alert('Erreur', 'Impossible de charger les produits');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (products.length === 0) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.emptyText}>Aucun produit disponible</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={loadProducts}>
+          <Text style={styles.retryText}>Réessayer</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   const renderItem = ({ item }) => {
     const qty = cart[item.id] || 0;
     return (
       <View style={styles.product}>
         <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.price}>{item.price}€</Text>
+        <Text style={styles.price}>{parseFloat(item.price).toFixed(2)}€</Text>
         <View style={styles.buttons}>
           <TouchableOpacity
             style={styles.button}
@@ -68,8 +91,8 @@ export default function ProductList({ cart, addToCart, removeFromCart }) {
 
   return (
     <SectionList
-      sections={groupByCategory(PRODUCTS)}
-      keyExtractor={item => item.id}
+      sections={groupByCategory(products)}
+      keyExtractor={item => item.id.toString()}
       renderItem={renderItem}
       renderSectionHeader={renderSectionHeader}
       contentContainerStyle={styles.container}

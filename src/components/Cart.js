@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,34 +7,48 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { productService } from '../services/api/products';
 
-const PRODUCTS = [
-  { id: '1', name: 'Leffe blonde', price: 3, category: 'Bières' },
-  { id: '2', name: 'Bière de Noel', price: 3.5, category: 'Bières' },
-  { id: '3', name: 'Jupiler', price: 3.5, category: 'Bières' },
-  { id: '4', name: 'Jenlain ambré', price: 3.5, category: 'Bières' },
-  { id: '5', name: 'Coca', price: 2, category: 'Sodas' },
-  { id: '6', name: 'Orangina', price: 2, category: 'Sodas' },
-  { id: '7', name: 'Oasis', price: 2, category: 'Sodas' },
-  { id: '8', name: 'Eau', price: 2, category: 'Sodas' },
-  { id: '9', name: 'Vin rouge', price: 4, category: 'Vins' },
-  { id: '10', name: 'Vin blanc', price: 4, category: 'Vins' },
-  { id: '11', name: 'Rosé', price: 4, category: 'Vins' },
-  { id: '12', name: 'Pastis', price: 3, category: 'Apéritif' },
-  { id: '13', name: 'Chips', price: 1.5, category: 'Autres' },
-  { id: '14', name: 'Snikers', price: 1.5, category: 'Autres' },
-];
+export default function Cart({
+  cart,
+  removeFromCart,
+  clearCart,
+  addToCart,
+  user,
+}) {
+  const [products, setProducts] = useState([]);
 
-export default function Cart({ cart, removeFromCart, clearCart }) {
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      const response = await productService.getAll();
+      console.log('products depuis cart', response);
+
+      if (response.success) {
+        setProducts(response.data);
+      }
+      console.log(products);
+    } catch (err) {
+      console.error('Erreur chargement produits : ', err);
+      Alert.alert('Erreur', 'Impossible de carger les produits');
+    }
+  };
+
   // Transforme l’objet `cart` {id: qty} → tableau de produits avec quantité
-  const items = Object.entries(cart)
+  const cartItems = Object.entries(cart)
     .map(([id, qty]) => {
-      const product = PRODUCTS.find(p => p.id === id);
+      const product = products.find(p => p.id === parseInt(id));
       return product ? { ...product, qty } : null;
     })
     .filter(Boolean);
 
-  const total = items.reduce((sum, i) => sum + i.price * i.qty, 0);
+  // Calculer le total
+  const total = cartItems.reduce((sum, item) => {
+    return sum + parseFloat(item.price) * item.qty;
+  }, 0);
 
   const handlePayByBadge = () => {
     Alert.alert(
@@ -53,7 +67,7 @@ export default function Cart({ cart, removeFromCart, clearCart }) {
   const handleClearCart = () => {
     Alert.alert(
       'Vider le panier',
-      'Souhaitez-vous vraiment vider le panier ?',
+      'Êtes-vous sûr de vouloir vider le panier ?',
       [
         { text: 'Annuler', style: 'cancel' },
         { text: 'Oui', onPress: clearCart },
@@ -61,84 +75,162 @@ export default function Cart({ cart, removeFromCart, clearCart }) {
     );
   };
 
+  // Panier vide
+  if (cartItems.length === 0) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.emptyIcon}>🛒</Text>
+        <Text style={styles.emptyText}>Votre panier est vide</Text>
+        <Text style={styles.emptySubtext}>
+          Ajoutez des produits depuis la carte
+        </Text>
+      </View>
+    );
+  }
+
+  const renderItem = ({ item }) => (
+    <View style={styles.row}>
+      <View style={styles.itemInfo}>
+        <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
+          {item.name}
+        </Text>
+        <Text style={styles.category} numberOfLines={1}>
+          {item.category?.name || 'Autre'}
+        </Text>
+      </View>
+
+      <View style={styles.quantityContainer}>
+        <TouchableOpacity
+          style={styles.qtyButton}
+          onPress={() => removeFromCart(item.id)}
+        >
+          <Text style={styles.qtyButtonText}>-</Text>
+        </TouchableOpacity>
+        <Text style={styles.qty}>x{item.qty}</Text>
+        <TouchableOpacity
+          style={styles.qtyButton}
+          onPress={() => addToCart(item.id)}
+        >
+          <Text style={styles.qtyButtonText}>+</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.price}>
+        {(parseFloat(item.price) * item.qty).toFixed(2)}€
+      </Text>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      {items.length === 0 ? (
-        <Text style={styles.empty}>Votre panier est vide.</Text>
-      ) : (
-        <>
-          <FlatList
-            data={items}
-            keyExtractor={item => item.id}
-            renderItem={({ item }) => (
-              <View style={styles.row}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.qty}>x{item.qty}</Text>
-                <Text style={styles.price}>
-                  {(item.price * item.qty).toFixed(2)}€
-                </Text>
-              </View>
-            )}
-          />
+      {/* Liste des items */}
+      <FlatList
+        data={cartItems}
+        keyExtractor={item => item.id.toString()}
+        renderItem={renderItem}
+        contentContainerStyle={styles.listContent}
+      />
 
-          {/* Total + bouton "vider" */}
-          <View style={styles.footer}>
-            <Text style={styles.total}>Total : {total.toFixed(2)}€</Text>
-            <TouchableOpacity
-              style={styles.clearButton}
-              onPress={handleClearCart}
-            >
-              <Text style={styles.clearText}>Vider le panier</Text>
-            </TouchableOpacity>
-          </View>
+      {/* Footer avec total et bouton vider */}
+      <View style={styles.footer}>
+        <View style={styles.totalContainer}>
+          <Text style={styles.totalLabel}>Total</Text>
+          <Text style={styles.totalAmount}>{total.toFixed(2)}€</Text>
+        </View>
 
-          {/* Boutons d’action */}
-          <View style={styles.actions}>
-            <TouchableOpacity
-              style={[styles.payButton, styles.badge]}
-              onPress={handlePayByBadge}
-            >
-              <Text style={styles.payText}>Payer par badge</Text>
-            </TouchableOpacity>
+        <TouchableOpacity style={styles.clearButton} onPress={handleClearCart}>
+          <Text style={styles.clearText}>🗑️ Vider le panier</Text>
+        </TouchableOpacity>
+      </View>
 
-            <TouchableOpacity
-              style={[styles.payButton, styles.qr]}
-              onPress={handlePayByQR}
-            >
-              <Text style={styles.payText}>Payer par QR code</Text>
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
+      {/* Boutons de paiement */}
+      <View style={styles.actions}>
+        <TouchableOpacity
+          style={[styles.payButton, styles.badgeButton]}
+          onPress={handlePayByBadge}
+        >
+          <Text style={styles.payText}>Payer par badge</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.payButton, styles.qrButton]}
+          onPress={handlePayByQR}
+        >
+          <Text style={styles.payText}>Payer par QR code</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#fff' },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 16 },
-  empty: { textAlign: 'center', marginTop: 20, color: '#777' },
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#fff',
+  },
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 20,
+  },
+  empty: {
+    textAlign: 'center',
+    marginTop: 20,
+    color: '#777',
+  },
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#ddd',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    marginBottom: 5,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
   },
-  name: { fontSize: 16, flex: 1 },
-  qty: { width: 40, textAlign: 'center' },
-  price: { width: 60, textAlign: 'right' },
-
+  itemInfo: {
+    width: 140,
+    marginRight: 8,
+  },
+  name: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1d3557',
+    marginBottom: 3,
+  },
+  category: {
+    fontSize: 12,
+    color: '#6c757d',
+  },
+  qty: {
+    width: 40,
+    textAlign: 'center',
+  },
+  price: {
+    width: 60,
+    textAlign: 'right',
+  },
   footer: {
-    marginTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
-    paddingTop: 10,
+    padding: 16,
+    borderTopWidth: 2,
+    borderTopColor: '#E9ECEF',
+    backgroundColor: '#F8F9FA',
   },
-  total: {
+  totalContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+  },
+  totalLabel: {
     fontSize: 18,
     fontWeight: 'bold',
-    textAlign: 'right',
+    color: '#333',
+  },
+  totalAmount: {
+    fontSize: 22,
+    fontWeight: 'bold',
     color: '#e63946',
   },
   clearButton: {
@@ -148,18 +240,50 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignSelf: 'flex-end',
   },
-  clearText: { color: '#333', fontWeight: '600' },
-
+  clearText: {
+    color: '#333',
+    fontWeight: '600',
+  },
   actions: {
     marginTop: 30,
     gap: 12,
+  },
+  quantityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: 110,
+    marginHorizontal: 12,
+  },
+  qtyButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#457b9d',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  qtyButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   payButton: {
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: 'center',
   },
-  badge: { backgroundColor: '#457b9d' },
-  qr: { backgroundColor: '#1d3557' },
-  payText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  payButtonIcon: {
+    fontSize: 24,
+  },
+  badgeButton: {
+    backgroundColor: '#457b9d',
+  },
+  qrButton: {
+    backgroundColor: '#1d3557',
+  },
+  payText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
 });

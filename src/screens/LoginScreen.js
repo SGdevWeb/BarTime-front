@@ -8,41 +8,43 @@ import {
   Alert,
   TouchableOpacity,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Button } from 'react-native-paper';
+import { authService } from '../services/api/auth';
 
 export default function LoginScreen({ onLoginSuccess, onNavigateToRegister }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
+    if (!username.trim() || !password.trim()) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      return;
+    }
+
     try {
-      const response = await fetch('http://localhost:3000/api/users/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
+      const response = await authService.login(username, password);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        await AsyncStorage.setItem('token', data.token);
-        onLoginSuccess(data);
-      } else {
-        Alert.alert(
-          'Erreur',
-          data.message || 'Nom d’utilisateur ou mot de passe incorrect',
+      if (response.success && response.user) {
+        console.log(
+          'User connecté:',
+          response.user.username,
+          'Role:',
+          response.user.role,
         );
+        onLoginSuccess(response.user);
+      } else {
+        throw new Error('Réponse invalide du serveur');
       }
     } catch (err) {
-      console.error(err);
-      Alert.alert('Erreur', 'Impossible de se connecter au serveur');
+      console.error('Erreur login:', err);
+      Alert.alert('Erreur', err.message || 'Impossible de se connecter');
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Connexion BarTime</Text>
+
       <TextInput
         placeholder="Nom d'utilisateur"
         value={username}
@@ -50,6 +52,7 @@ export default function LoginScreen({ onLoginSuccess, onNavigateToRegister }) {
         style={styles.input}
         autoCapitalize="none"
       />
+
       <TextInput
         placeholder="Mot de passe"
         value={password}
@@ -57,6 +60,7 @@ export default function LoginScreen({ onLoginSuccess, onNavigateToRegister }) {
         secureTextEntry
         style={styles.input}
       />
+
       <Button
         mode="contained"
         onPress={handleLogin}
