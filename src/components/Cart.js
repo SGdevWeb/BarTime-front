@@ -25,12 +25,10 @@ export default function Cart({
   const loadProducts = async () => {
     try {
       const response = await productService.getAll();
-      console.log('products depuis cart', response);
 
       if (response.success) {
         setProducts(response.data);
       }
-      console.log(products);
     } catch (err) {
       console.error('Erreur chargement produits : ', err);
       Alert.alert('Erreur', 'Impossible de carger les produits');
