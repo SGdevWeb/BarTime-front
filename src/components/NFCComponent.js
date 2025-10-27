@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { List, Divider } from 'react-native-paper';
+import { badgeService } from '../services/api/badges';
 
 import PairBadge from './NFC/PairBadge';
 import BadgeList from './NFC/BadgeList';
@@ -8,27 +9,43 @@ import SupplyBadge from './NFC/SupplyBadge';
 import ReadBadge from './NFC/ReadBadge';
 
 export default function NFCComponent() {
-  // 💾 État centralisé pour tous les badges simulés
-  const [badges, setBadges] = React.useState([
-    {
-      id: 'B001',
-      user: 'Alice Dupont',
-      balance: 12.5,
-      history: [
-        { date: '2025-10-10', montant: 10, type: 'Recharge espèces' },
-        { date: '2025-10-12', montant: -2.5, type: 'Achat bière' },
-      ],
-    },
-    {
-      id: 'B002',
-      user: 'Bob Martin',
-      balance: 8.0,
-      history: [{ date: '2025-10-15', montant: 8, type: 'Recharge espèces' }],
-    },
-  ]);
-
-  // 📂 Gestion du panneau actuellement ouvert
+  const [badges, setBadges] = React.useState([]);
   const [expanded, setExpanded] = React.useState('');
+
+  // 💾 État centralisé pour tous les badges simulés
+  // const [badges, setBadges] = React.useState([
+  //   {
+  //     id: 'B001',
+  //     user: 'Alice Dupont',
+  //     balance: 12.5,
+  //     history: [
+  //       { date: '2025-10-10', montant: 10, type: 'Recharge espèces' },
+  //       { date: '2025-10-12', montant: -2.5, type: 'Achat bière' },
+  //     ],
+  //   },
+  //   {
+  //     id: 'B002',
+  //     user: 'Bob Martin',
+  //     balance: 8.0,
+  //     history: [{ date: '2025-10-15', montant: 8, type: 'Recharge espèces' }],
+  //   },
+  // ]);
+
+  React.useEffect(() => {
+    loadBadges();
+  }, []);
+
+  const loadBadges = async () => {
+    try {
+      const response = await badgeService.getAll();
+
+      if (response.success) {
+        setBadges(response.data);
+      }
+    } catch (err) {
+      console.error('Erreur chargement badges:', err);
+    }
+  };
 
   const handlePress = section => {
     setExpanded(expanded === section ? '' : section);
@@ -47,7 +64,11 @@ export default function NFCComponent() {
           onPress={() => handlePress('lecture')}
           left={props => <List.Icon {...props} icon="nfc" />}
         >
-          <ReadBadge badges={badges} setBadges={setBadges} />
+          <ReadBadge
+            badges={badges}
+            setBadges={setBadges}
+            onRefresh={loadBadges}
+          />
         </List.Accordion>
 
         <Divider />
@@ -58,18 +79,22 @@ export default function NFCComponent() {
           onPress={() => handlePress('appairage')}
           left={props => <List.Icon {...props} icon="link-variant" />}
         >
-          <PairBadge badges={badges} setBadges={setBadges} />
+          <PairBadge
+            badges={badges}
+            setBadges={setBadges}
+            onRefresh={loadBadges}
+          />
         </List.Accordion>
 
         <Divider />
 
         <List.Accordion
-          title="Liste des badges appairés"
+          title="Liste des badges"
           expanded={expanded === 'liste'}
           onPress={() => handlePress('liste')}
           left={props => <List.Icon {...props} icon="format-list-bulleted" />}
         >
-          <BadgeList badges={badges} />
+          <BadgeList badges={badges} onRefresh={loadBadges} />
         </List.Accordion>
 
         <Divider />
@@ -82,7 +107,11 @@ export default function NFCComponent() {
             <List.Icon {...props} icon="credit-card-plus-outline" />
           )}
         >
-          <SupplyBadge badges={badges} setBadges={setBadges} />
+          <SupplyBadge
+            badges={badges}
+            setBadges={setBadges}
+            onRefresh={loadBadges}
+          />
         </List.Accordion>
       </List.Section>
     </ScrollView>
