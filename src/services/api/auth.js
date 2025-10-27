@@ -3,14 +3,13 @@ import { publicClient } from './client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const authService = {
-  // Connexion
-  login: async (username, password) => {
-    const response = await publicClient('/users/login', {
+  // Inscription Association
+  registerAssociation: async data => {
+    const response = await publicClient('/users/register-association', {
       method: 'POST',
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify(data),
     });
 
-    // Sauvegarder le token
     if (response.token) {
       await AsyncStorage.setItem('token', response.token);
     }
@@ -24,6 +23,21 @@ export const authService = {
       method: 'POST',
       body: JSON.stringify(userData),
     });
+  },
+
+  // Connexion
+  login: async (username, password) => {
+    const response = await publicClient('/users/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
+
+    // Sauvegarder le token
+    if (response.token) {
+      await AsyncStorage.setItem('token', response.token);
+    }
+
+    return response;
   },
 
   // Déconnexion
