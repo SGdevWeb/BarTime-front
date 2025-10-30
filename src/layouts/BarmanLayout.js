@@ -1,6 +1,12 @@
+// src/screens/BarmanLayout.js
 import * as React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Appbar, BottomNavigation } from 'react-native-paper';
+import {
+  Appbar,
+  BottomNavigation,
+  IconButton,
+  Tooltip,
+} from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Badge } from 'react-native-paper';
@@ -8,12 +14,16 @@ import { Badge } from 'react-native-paper';
 import ProductList from '../components/ProductList';
 import Cart from '../components/Cart';
 import NFCComponent from '../components/NFCComponent';
-import SettingsStack from '../components/SettingsStack'; // contient Settings + sous-écrans
+import SettingsStack from '../components/SettingsStack';
 
-export default function BarmanLayout({ onLogout, user }) {
+export default function BarmanLayout({
+  onLogout,
+  user,
+  onSwitchMode,
+  canSwitch,
+}) {
   const insets = useSafeAreaInsets();
   const [index, setIndex] = React.useState(0);
-
   const [cart, setCart] = React.useState({});
 
   const addToCart = id => {
@@ -91,9 +101,20 @@ export default function BarmanLayout({ onLogout, user }) {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Header avec switch discret */}
       <Appbar.Header>
         <Appbar.Content title={getTitle()} />
+
+        {/* Switch Mode - Seulement pour adhérent-barman */}
+        {canSwitch && (
+          <IconButton
+            icon="account"
+            size={24}
+            iconColor="#e63946"
+            onPress={onSwitchMode}
+            style={styles.switchIcon}
+          />
+        )}
       </Appbar.Header>
 
       {/* Navigation principale */}
@@ -128,7 +149,6 @@ export default function BarmanLayout({ onLogout, user }) {
             );
           }
 
-          // Icônes normales pour les autres onglets
           return (
             <MaterialCommunityIcons
               name={route.focusedIcon}
@@ -153,4 +173,7 @@ export default function BarmanLayout({ onLogout, user }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   content: { flex: 1 },
+  switchIcon: {
+    margin: 0,
+  },
 });

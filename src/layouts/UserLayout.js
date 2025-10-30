@@ -1,7 +1,7 @@
 // src/screens/UserLayout.js
 import React, { useState } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
-import { Appbar, BottomNavigation } from 'react-native-paper';
+import { Appbar, BottomNavigation, IconButton } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function HomeScreen() {
@@ -34,7 +34,7 @@ function SettingsScreen({ onLogout }) {
   );
 }
 
-export default function UserLayout({ onLogout }) {
+export default function UserLayout({ onLogout, onSwitchMode, canSwitch }) {
   const insets = useSafeAreaInsets();
   const [index, setIndex] = useState(0);
   const [routes] = useState([
@@ -51,9 +51,20 @@ export default function UserLayout({ onLogout }) {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Header avec switch discret */}
       <Appbar.Header>
         <Appbar.Content title={routes[index].title} />
+
+        {/* Switch Mode Barman - Seulement si l'utilisateur a les permissions */}
+        {canSwitch && (
+          <IconButton
+            icon="glass-mug-variant"
+            size={24}
+            iconColor="#e63946"
+            onPress={onSwitchMode}
+            style={styles.switchIcon}
+          />
+        )}
       </Appbar.Header>
 
       {/* BottomNavigation (gère le contenu et la barre) */}
@@ -76,5 +87,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  switchIcon: {
+    margin: 0,
   },
 });

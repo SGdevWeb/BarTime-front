@@ -3,3 +3,5 @@ export { productService } from './products';
 export { authService } from './auth';
 export { transactionService } from './transactions';
 export { apiClient, publicClient, API_URL } from './client';
+export { badgesService } from './badges';
+export { userService } from './users';
