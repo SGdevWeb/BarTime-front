@@ -4,8 +4,9 @@ import BarmanLayout from './BarmanLayout';
 import UserLayout from './UserLayout';
 
 export default function MainLayout({ user, onLogout }) {
-  // On démarre en mode adhérent par défaut
-  const [mode, setMode] = useState('adherent');
+  // Démarrer en mode barman si c'est une association pure
+  const defaultMode = user.role === 'association' ? 'barman' : 'adherent';
+  const [mode, setMode] = useState(defaultMode);
 
   // Vérifier si l'utilisateur peut gérer le bar
   const hasBarAccess =
@@ -14,8 +15,8 @@ export default function MainLayout({ user, onLogout }) {
   // Enrichir l'objet user avec le mode actuel
   const userWithMode = {
     ...user,
-    currentMode: mode, // Ajouter le mode actuel pour les vérifications
-    isActingAsBarman: mode === 'barman', // Flag explicite
+    currentMode: mode,
+    isActingAsBarman: mode === 'barman',
   };
 
   // Mode Barman
