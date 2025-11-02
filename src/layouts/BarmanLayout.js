@@ -78,7 +78,7 @@ export default function BarmanLayout({
           />
         );
       case 'settings':
-        return <SettingsStack onLogout={onLogout} />;
+        return <SettingsStack onLogout={onLogout} user={user} />;
       default:
         return null;
     }
