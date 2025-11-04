@@ -26,10 +26,10 @@ export const authService = {
   },
 
   // Connexion
-  login: async (username, password) => {
+  login: async (email, password) => {
     const response = await publicClient('/users/login', {
       method: 'POST',
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ email, password }),
     });
 
     // Sauvegarder le token

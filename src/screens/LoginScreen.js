@@ -47,7 +47,7 @@ export default function LoginScreen({ onLoginSuccess, onNavigateToRegister }) {
       const response = await authService.login(email, password);
 
       if (response.success && response.user) {
-        console.log('✅ Connexion réussie:', response.user.username);
+        console.log('✅ Connexion réussie:', response.user.email);
         onLoginSuccess(response.user);
       } else {
         throw new Error('Réponse invalide du serveur');
