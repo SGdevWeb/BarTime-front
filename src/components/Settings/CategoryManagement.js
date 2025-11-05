@@ -129,34 +129,71 @@ export default function CategoryManagement() {
     }
   };
 
-  const handleDelete = category => {
-    Alert.alert(
-      'Confirmer la suppression',
-      `Êtes-vous sûr de vouloir supprimer la catégorie "${category.name}" ?\n\n⚠️ Les produits associés devront être recatégorisés.`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Supprimer',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const response = await categoryService.delete(category.id);
+  const handleDelete = async category => {
+    try {
+      const usageResponse = await categoryService.checkUsage(category.id);
 
-              if (response.success) {
-                loadCategories();
-                Alert.alert('Succès', 'Catégorie supprimée');
+      if (!usageResponse.success) {
+        Alert.alert(
+          'Erreur',
+          "Impossible de vérifier l'utilisation de la catégorie",
+        );
+        return;
+      }
+
+      const { productCount, canDelete } = usageResponse.data;
+
+      // Si la catégorie est utilisée, afficher un message d'erreur
+      if (!canDelete) {
+        Alert.alert(
+          'Suppression impossible',
+          `Cette catégorie ne peut pas être supprimée car ${productCount} produit${
+            productCount > 1 ? 's' : ''
+          } l'utilise${
+            productCount > 1 ? 'nt' : ''
+          }.\n\nVous devez d'abord supprimer ou recatégoriser ${
+            productCount > 1 ? 'ces produits' : 'ce produit'
+          }.`, // 👈 Corrigé
+          [{ text: 'OK' }],
+        );
+        return;
+      }
+
+      // Si la catégorie n'est pas utilisée, demander confirmation
+      Alert.alert(
+        'Confirmer la suppression',
+        `Êtes-vous sûr de vouloir supprimer la catégorie "${category.name}" ?`,
+        [
+          { text: 'Annuler', style: 'cancel' },
+          {
+            text: 'Supprimer',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                const response = await categoryService.delete(category.id);
+
+                if (response.success) {
+                  loadCategories();
+                  Alert.alert('Succès', 'Catégorie supprimée');
+                }
+              } catch (err) {
+                console.error('Erreur suppression catégorie:', err);
+                Alert.alert(
+                  'Erreur',
+                  err.message || 'Impossible de supprimer la catégorie',
+                );
               }
-            } catch (err) {
-              console.error('Erreur suppression catégorie:', err);
-              Alert.alert(
-                'Erreur',
-                err.message || 'Impossible de supprimer la catégorie',
-              );
-            }
+            },
           },
-        },
-      ],
-    );
+        ],
+      );
+    } catch (err) {
+      console.error('Erreur vérification catégorie:', err);
+      Alert.alert(
+        'Erreur',
+        "Impossible de vérifier l'utilisation de la catégorie",
+      );
+    }
   };
 
   if (loading) {

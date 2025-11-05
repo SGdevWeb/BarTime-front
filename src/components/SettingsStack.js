@@ -50,7 +50,6 @@ export default function SettingsStack({ onLogout, user }) {
         return <CategoryManagement user={user} />;
       case 'stripe':
         return <StripeSettings user={user} />;
-
       case 'account':
         return <AccountSettings user={user} onLogout={onLogout} />;
       case 'about':

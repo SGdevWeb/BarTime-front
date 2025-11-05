@@ -29,4 +29,8 @@ export const categoryService = {
       method: 'DELETE',
     });
   },
+
+  checkUsage: async id => {
+    return apiClient(`/categories/${id}/usage`);
+  },
 };

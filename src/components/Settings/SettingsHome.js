@@ -102,7 +102,7 @@ export default function SettingsHome({ onNavigate, onLogout, user }) {
               description="Gérer les catégories de produits"
               left={props => <List.Icon {...props} icon="tag-multiple" />}
               right={props => <List.Icon {...props} icon="chevron-right" />}
-              onPress={() => onNavigate('categories')}
+              onPress={() => onNavigate('categories', 'Catégories')}
             />
             <Divider />
             <List.Item
