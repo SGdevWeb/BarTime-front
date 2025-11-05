@@ -98,6 +98,14 @@ export default function SettingsHome({ onNavigate, onLogout, user }) {
             />
             <Divider />
             <List.Item
+              title="Catégories"
+              description="Gérer les catégories de produits"
+              left={props => <List.Icon {...props} icon="tag-multiple" />}
+              right={props => <List.Icon {...props} icon="chevron-right" />}
+              onPress={() => onNavigate('categories')}
+            />
+            <Divider />
+            <List.Item
               title="Configuration Stripe"
               description="Paiements et recharges"
               left={props => (

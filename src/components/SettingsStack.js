@@ -8,6 +8,7 @@ import MemberManagement from './Settings/MemberManagement';
 import BarmanManagement from './Settings/BarmanManagement';
 import StripeSettings from './Settings/StripeSettings';
 import ProductManagement from './Settings/ProductManagement';
+import CategoryManagement from './Settings/CategoryManagement';
 import AccountSettings from './Settings/AccountSettings';
 import About from './Settings/About';
 
@@ -43,10 +44,13 @@ export default function SettingsStack({ onLogout, user }) {
         return <MemberManagement user={user} />;
       case 'barmans':
         return <BarmanManagement user={user} />;
-      case 'stripe':
-        return <StripeSettings user={user} />;
       case 'products':
         return <ProductManagement user={user} />;
+      case 'categories':
+        return <CategoryManagement user={user} />;
+      case 'stripe':
+        return <StripeSettings user={user} />;
+
       case 'account':
         return <AccountSettings user={user} onLogout={onLogout} />;
       case 'about':
