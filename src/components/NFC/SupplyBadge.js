@@ -21,14 +21,16 @@ export default function SupplyBadge({ badges, setBadges }) {
     const numericAmount = parseFloat(amount);
     if (!badgeInfo || isNaN(numericAmount) || numericAmount <= 0) return;
 
+    const newBalance = (badgeInfo.balance || 0) + numericAmount;
+
     setBadges(prev =>
       prev.map(b =>
         b.id === badgeInfo.id
           ? {
               ...b,
-              balance: b.balance + numericAmount,
+              balance: newBalance + numericAmount,
               history: [
-                ...b.history,
+                ...(b.history || []),
                 {
                   date: new Date().toISOString().slice(0, 10),
                   montant: numericAmount,
@@ -45,7 +47,7 @@ export default function SupplyBadge({ badges, setBadges }) {
       `${badgeInfo.user} (${badgeInfo.id}) a été rechargé de ${numericAmount} €`,
     );
 
-    setBadgeInfo(prev => ({ ...prev, balance: prev.balance + numericAmount }));
+    setBadgeInfo(prev => ({ ...prev, balance: newBalance }));
     setAmount('');
   };
 
@@ -68,7 +70,7 @@ export default function SupplyBadge({ badges, setBadges }) {
             <Text variant="bodyLarge">👤 {badgeInfo.user}</Text>
             <Text variant="bodyMedium">🆔 ID : {badgeInfo.id}</Text>
             <Text variant="bodyMedium">
-              💰 Solde : {badgeInfo.balance.toFixed(2)} €
+              💰 Solde : {(badgeInfo?.balance ?? 0).toFixed(2)} €
             </Text>
 
             <TextInput
