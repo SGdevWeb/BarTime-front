@@ -12,25 +12,6 @@ export default function NFCComponent() {
   const [badges, setBadges] = React.useState([]);
   const [expanded, setExpanded] = React.useState('');
 
-  // 💾 État centralisé pour tous les badges simulés
-  // const [badges, setBadges] = React.useState([
-  //   {
-  //     id: 'B001',
-  //     user: 'Alice Dupont',
-  //     balance: 12.5,
-  //     history: [
-  //       { date: '2025-10-10', montant: 10, type: 'Recharge espèces' },
-  //       { date: '2025-10-12', montant: -2.5, type: 'Achat bière' },
-  //     ],
-  //   },
-  //   {
-  //     id: 'B002',
-  //     user: 'Bob Martin',
-  //     balance: 8.0,
-  //     history: [{ date: '2025-10-15', montant: 8, type: 'Recharge espèces' }],
-  //   },
-  // ]);
-
   React.useEffect(() => {
     loadBadges();
   }, []);
@@ -40,7 +21,19 @@ export default function NFCComponent() {
       const response = await badgeService.getAll();
 
       if (response.success) {
-        setBadges(response.data);
+        const mappedBadges = response.data.map(badge => ({
+          id: badge.id,
+          user:
+            `${badge.name || ''} ${badge.surname || ''}`.trim() || badge.email,
+          balance: parseFloat(badge.balance) || 0,
+          email: badge.email,
+          user_id: badge.user_id,
+          is_active: badge.is_active,
+          created_at: badge.created_at,
+          history: badge.history || [],
+        }));
+
+        setBadges(mappedBadges);
       }
     } catch (err) {
       console.error('Erreur chargement badges:', err);

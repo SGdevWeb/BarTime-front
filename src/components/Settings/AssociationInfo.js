@@ -8,6 +8,7 @@ import {
   Card,
   ActivityIndicator,
   Divider,
+  Chip,
 } from 'react-native-paper';
 import { apiClient } from '../../services/api/client';
 
@@ -16,11 +17,17 @@ export default function AssociationInfo({ user }) {
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [trialEndsAt, setTrialEndsAt] = useState('');
-  const [subscriptionStatus, setSubscriptionStatus] = useState('');
   const [createdAt, setCreatedAt] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Statistiques
+  const [stats, setStats] = useState({
+    totalMembers: 0,
+    activeMembers: 0,
+    totalProducts: 0,
+    totalCategories: 0,
+  });
 
   // Valeurs initiales
   const [initialData, setInitialData] = useState({
@@ -31,6 +38,7 @@ export default function AssociationInfo({ user }) {
 
   useEffect(() => {
     loadAssociationInfo();
+    loadStatistics();
   }, []);
 
   const loadAssociationInfo = async () => {
@@ -49,8 +57,6 @@ export default function AssociationInfo({ user }) {
         setAddress(addr);
         setPhone(ph);
         setEmail(user.email || '');
-        setTrialEndsAt(association.trial_ends_at || '');
-        setSubscriptionStatus(association.subscription_status || 'trial');
         setCreatedAt(association.created_at || '');
 
         setInitialData({
@@ -62,13 +68,42 @@ export default function AssociationInfo({ user }) {
     } catch (err) {
       console.error('Erreur chargement association : ', err);
       setEmail(user.email || '');
-      setAssociationName(user.assocation_name || '');
+      setAssociationName(user.association_name || '');
     } finally {
       setLoading(false);
     }
   };
 
-  // Vérifier di des modifications ont été faites
+  const loadStatistics = async () => {
+    try {
+      // Charger les statistiques en parallèle
+      const [usersRes, productsRes, categoriesRes] = await Promise.all([
+        apiClient('/users').catch(() => ({ data: [] })),
+        apiClient('/products').catch(() => ({ data: [] })),
+        apiClient('/categories').catch(() => ({ data: [] })),
+      ]);
+
+      // Filtrer par association
+      const associationUsers =
+        usersRes.data?.filter(u => u.association_id === user.association_id) ||
+        [];
+
+      const associationProducts =
+        productsRes.data?.filter(
+          p => p.association_id === user.association_id,
+        ) || [];
+
+      setStats({
+        totalMembers: associationUsers.length,
+        activeMembers: associationUsers.filter(u => u.is_active).length,
+        totalProducts: associationProducts.length,
+        totalCategories: categoriesRes.data?.length || 0,
+      });
+    } catch (err) {
+      console.error('Erreur chargement statistiques:', err);
+    }
+  };
+
   const hasChanges = () => {
     return (
       associationName !== initialData.name ||
@@ -78,7 +113,6 @@ export default function AssociationInfo({ user }) {
   };
 
   const handleSave = async () => {
-    // Validation
     if (!associationName.trim()) {
       alert("❌ Le nom de l'association est requis");
       return;
@@ -116,14 +150,26 @@ export default function AssociationInfo({ user }) {
     }
   };
 
-  const formatDate = dateString => {
+  const calculateAnciennete = dateString => {
     if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+
+    const created = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - created);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 30) {
+      return `${diffDays} jour${diffDays > 1 ? 's' : ''}`;
+    } else if (diffDays < 365) {
+      const months = Math.floor(diffDays / 30);
+      return `${months} mois`;
+    } else {
+      const years = Math.floor(diffDays / 365);
+      const months = Math.floor((diffDays % 365) / 30);
+      return months > 0
+        ? `${years} an${years > 1 ? 's' : ''} et ${months} mois`
+        : `${years} an${years > 1 ? 's' : ''}`;
+    }
   };
 
   if (loading) {
@@ -137,6 +183,7 @@ export default function AssociationInfo({ user }) {
 
   return (
     <ScrollView style={styles.container}>
+      {/* Informations générales */}
       <Card style={styles.card}>
         <Card.Content>
           <Text style={styles.sectionTitle}>Informations générales</Text>
@@ -178,7 +225,7 @@ export default function AssociationInfo({ user }) {
               <Text style={styles.readOnlyValue}>{email}</Text>
             </View>
             <Text style={styles.readOnlyHelper}>
-              💡 Pour modifier l'email, rendez-vous dans "Mon compte"
+              💡 L'email est lié à votre compte et ne peut pas être modifié
             </Text>
           </View>
 
@@ -195,54 +242,40 @@ export default function AssociationInfo({ user }) {
         </Card.Content>
       </Card>
 
+      {/* Statistiques */}
       <Card style={styles.card}>
         <Card.Content>
-          <Text style={styles.sectionTitle}>Abonnement</Text>
+          <Text style={styles.sectionTitle}>Vue d'ensemble</Text>
 
-          <View style={styles.subscriptionInfo}>
-            <Text style={styles.subscriptionLabel}>Plan actuel :</Text>
-            <Text style={styles.subscriptionValue}>
-              {subscriptionStatus === 'trial' ? 'Essai gratuit' : 'Premium'}
-            </Text>
+          <View style={styles.statsGrid}>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{stats.totalMembers}</Text>
+              <Text style={styles.statLabel}>Membres inscrits</Text>
+            </View>
+
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{stats.activeMembers}</Text>
+              <Text style={styles.statLabel}>Membres actifs</Text>
+            </View>
+
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{stats.totalProducts}</Text>
+              <Text style={styles.statLabel}>Produits</Text>
+            </View>
+
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{stats.totalCategories}</Text>
+              <Text style={styles.statLabel}>Catégories</Text>
+            </View>
           </View>
 
-          <View style={styles.subscriptionInfo}>
-            <Text style={styles.subscriptionLabel}>
-              {subscriptionStatus === 'trial'
-                ? 'Expire le :'
-                : 'Renouvelé le :'}
-            </Text>
-            <Text style={styles.subscriptionValue}>
-              {formatDate(trialEndsAt)}
-            </Text>
-          </View>
+          <Divider style={styles.divider} />
 
-          {subscriptionStatus === 'trial' && (
-            <Button
-              mode="outlined"
-              style={styles.upgradeButton}
-              icon="rocket-launch"
-              onPress={() => alert('🚀 Fonctionnalité à venir')}
-            >
-              Passer à la version Premium
-            </Button>
-          )}
-        </Card.Content>
-      </Card>
-
-      {/* Informations complémentaires */}
-      <Card style={styles.card}>
-        <Card.Content>
-          <Text style={styles.sectionTitle}>Statistiques</Text>
-
-          <View style={styles.statRow}>
-            <Text style={styles.statLabel}>ID Association</Text>
-            <Text style={styles.statValue}>{user.association_id}</Text>
-          </View>
-
-          <View style={styles.statRow}>
-            <Text style={styles.statLabel}>Compte créé le</Text>
-            <Text style={styles.statValue}>{formatDate(createdAt)}</Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Membre depuis</Text>
+            <Chip mode="outlined" style={styles.chip}>
+              {calculateAnciennete(createdAt)}
+            </Chip>
           </View>
         </Card.Content>
       </Card>
@@ -312,36 +345,42 @@ const styles = StyleSheet.create({
   saveButton: {
     marginTop: 8,
   },
-  subscriptionInfo: {
+  statsGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    marginBottom: 8,
   },
-  subscriptionLabel: {
-    fontSize: 14,
-    color: '#626c6c',
+  statCard: {
+    width: '48%',
+    backgroundColor: '#f8f9fa',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    alignItems: 'center',
   },
-  subscriptionValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1f2121',
-  },
-  upgradeButton: {
-    marginTop: 16,
-  },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+  statNumber: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#e63946',
+    marginBottom: 4,
   },
   statLabel: {
+    fontSize: 12,
+    color: '#626c6c',
+    textAlign: 'center',
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  infoLabel: {
     fontSize: 14,
     color: '#626c6c',
   },
-  statValue: {
-    fontSize: 14,
-    color: '#1f2121',
+  chip: {
+    backgroundColor: '#fff',
   },
 });

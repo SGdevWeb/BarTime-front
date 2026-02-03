@@ -105,15 +105,6 @@ export default function SettingsHome({ onNavigate, onLogout, user }) {
               onPress={() => onNavigate('categories', 'Catégories')}
             />
             <Divider />
-            <List.Item
-              title="Configuration Stripe"
-              description="Paiements et recharges"
-              left={props => (
-                <List.Icon {...props} icon="credit-card-outline" />
-              )}
-              right={props => <List.Icon {...props} icon="chevron-right" />}
-              onPress={() => onNavigate('stripe', 'Stripe')}
-            />
           </List.Section>
 
           <Divider style={styles.sectionDivider} />
