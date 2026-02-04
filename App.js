@@ -1,12 +1,23 @@
 import React, { useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Provider as PaperProvider } from 'react-native-paper';
+import { Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
 import { NavigationContainer } from '@react-navigation/native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import MainLayout from './src/layouts/MainLayout';
+
+const theme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: '#f7f7f7', // Couleur de fond par défaut de Paper
+    surface: '#ffffff',
+    primary: '#e63946', // Ton rouge principal
+    accent: '#457b9d', // Ton bleu
+  },
+};
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -21,6 +32,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <PaperProvider
+        theme={theme}
         settings={{
           icon: props => <MaterialCommunityIcons {...props} />,
         }}

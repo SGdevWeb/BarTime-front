@@ -35,7 +35,7 @@ export default function Cart({
     }
   };
 
-  // Transforme l’objet `cart` {id: qty} → tableau de produits avec quantité
+  // Transforme l'objet `cart` {id: qty} → tableau de produits avec quantité
   const cartItems = Object.entries(cart)
     .map(([id, qty]) => {
       const product = products.find(p => p.id === parseInt(id));
@@ -76,12 +76,14 @@ export default function Cart({
   // Panier vide
   if (cartItems.length === 0) {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.emptyIcon}>🛒</Text>
-        <Text style={styles.emptyText}>Votre panier est vide</Text>
-        <Text style={styles.emptySubtext}>
-          Ajoutez des produits depuis la carte
-        </Text>
+      <View style={styles.emptyContainer}>
+        <View style={styles.emptyContent}>
+          <Text style={styles.emptyIcon}>🍻</Text>
+          <Text style={styles.emptyText}>Aucune commande en cours</Text>
+          <Text style={styles.emptySubtext}>
+            Ajoutez des produits depuis la carte
+          </Text>
+        </View>
       </View>
     );
   }
@@ -167,15 +169,33 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#fff',
   },
-  centerContainer: {
+  emptyContainer: {
     flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    backgroundColor: '#fff',
+    padding: 40,
   },
-  empty: {
+  emptyContent: {
+    alignItems: 'center',
+    marginBottom: 80,
+  },
+  emptyIcon: {
+    fontSize: 80,
+    marginBottom: 24,
+  },
+  emptyText: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 12,
     textAlign: 'center',
-    marginTop: 20,
+  },
+  emptySubtext: {
+    fontSize: 16,
     color: '#777',
+    textAlign: 'center',
+    lineHeight: 22,
   },
   row: {
     flexDirection: 'row',

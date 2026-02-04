@@ -58,7 +58,9 @@ export default function SettingsHome({ onNavigate, onLogout, user }) {
       {user.role === 'association' && (
         <>
           <List.Section>
-            <List.Subheader>Association</List.Subheader>
+            <List.Subheader style={styles.subheader}>
+              Association
+            </List.Subheader>
             <List.Item
               title="Informations de l'association"
               description="Nom, adresse, contact"
@@ -88,7 +90,7 @@ export default function SettingsHome({ onNavigate, onLogout, user }) {
 
           {/* Section Gestion */}
           <List.Section>
-            <List.Subheader>Gestion</List.Subheader>
+            <List.Subheader style={styles.subheader}>Gestion</List.Subheader>
             <List.Item
               title="Gestion des produits"
               description="Carte, prix, catégories"
@@ -113,7 +115,7 @@ export default function SettingsHome({ onNavigate, onLogout, user }) {
 
       {/* Section Compte (pour tous) */}
       <List.Section>
-        <List.Subheader>Mon compte</List.Subheader>
+        <List.Subheader style={styles.subheader}>Mon compte</List.Subheader>
         <List.Item
           title="Paramètres du compte"
           description="Email, mot de passe, solde"
@@ -127,7 +129,7 @@ export default function SettingsHome({ onNavigate, onLogout, user }) {
 
       {/* Section Informations */}
       <List.Section>
-        <List.Subheader>Informations</List.Subheader>
+        <List.Subheader style={styles.subheader}>Informations</List.Subheader>
         <List.Item
           title="À propos"
           description="Version, conditions, support"
@@ -153,6 +155,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  subheader: {
+    color: '#457b9d',
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
   userHeader: {
     alignItems: 'center',

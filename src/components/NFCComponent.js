@@ -1,5 +1,11 @@
 import * as React from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  LayoutAnimation,
+  Platform,
+  UIManager,
+} from 'react-native';
 import { List, Divider } from 'react-native-paper';
 import { badgeService } from '../services/api/badges';
 
@@ -7,6 +13,14 @@ import PairBadge from './NFC/PairBadge';
 import BadgeList from './NFC/BadgeList';
 import SupplyBadge from './NFC/SupplyBadge';
 import ReadBadge from './NFC/ReadBadge';
+
+// Pour Android
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export default function NFCComponent() {
   const [badges, setBadges] = React.useState([]);
@@ -41,6 +55,14 @@ export default function NFCComponent() {
   };
 
   const handlePress = section => {
+    LayoutAnimation.configureNext(
+      LayoutAnimation.create(
+        500,
+        LayoutAnimation.Types.easeInEaseOut,
+        LayoutAnimation.Properties.opacity,
+      ),
+    );
+
     setExpanded(expanded === section ? '' : section);
   };
 
@@ -56,6 +78,10 @@ export default function NFCComponent() {
           expanded={expanded === 'lecture'}
           onPress={() => handlePress('lecture')}
           left={props => <List.Icon {...props} icon="nfc" />}
+          theme={{ colors: { primary: '#457b9d' } }}
+          style={
+            expanded === 'lecture' ? styles.accordionExpanded : styles.accordion
+          }
         >
           <ReadBadge
             badges={badges}
@@ -71,6 +97,10 @@ export default function NFCComponent() {
           expanded={expanded === 'appairage'}
           onPress={() => handlePress('appairage')}
           left={props => <List.Icon {...props} icon="link-variant" />}
+          theme={{ colors: { primary: '#457b9d' } }}
+          style={
+            expanded === 'lecture' ? styles.accordionExpanded : styles.accordion
+          }
         >
           <PairBadge
             badges={badges}
@@ -86,6 +116,10 @@ export default function NFCComponent() {
           expanded={expanded === 'liste'}
           onPress={() => handlePress('liste')}
           left={props => <List.Icon {...props} icon="format-list-bulleted" />}
+          theme={{ colors: { primary: '#457b9d' } }}
+          style={
+            expanded === 'lecture' ? styles.accordionExpanded : styles.accordion
+          }
         >
           <BadgeList badges={badges} onRefresh={loadBadges} />
         </List.Accordion>
@@ -99,6 +133,10 @@ export default function NFCComponent() {
           left={props => (
             <List.Icon {...props} icon="credit-card-plus-outline" />
           )}
+          theme={{ colors: { primary: '#457b9d' } }}
+          style={
+            expanded === 'lecture' ? styles.accordionExpanded : styles.accordion
+          }
         >
           <SupplyBadge
             badges={badges}

@@ -50,7 +50,7 @@ export default function BarmanLayout({
       title: 'Carte',
       focusedIcon: 'beer-outline',
     },
-    { key: 'cart', title: 'Panier', focusedIcon: 'cart-outline' },
+    { key: 'cart', title: 'Commande', focusedIcon: 'clipboard-text-outline' },
     { key: 'nfc', title: 'Badge', focusedIcon: 'wifi' },
     { key: 'settings', title: 'Paramètres', focusedIcon: 'cog-outline' },
   ];
@@ -89,7 +89,7 @@ export default function BarmanLayout({
       case 'productList':
         return 'Carte';
       case 'cart':
-        return 'Panier';
+        return 'Commande';
       case 'nfc':
         return 'Badge';
       case 'settings':
@@ -122,12 +122,14 @@ export default function BarmanLayout({
         navigationState={{ index, routes }}
         onIndexChange={setIndex}
         renderScene={renderScene}
+        shifting={false}
+        compact={true}
         renderIcon={({ route, focused, color }) => {
           if (route.key === 'cart') {
             return (
               <View style={{ position: 'relative' }}>
                 <MaterialCommunityIcons
-                  name="cart-outline"
+                  name="clipboard-text-outline"
                   size={24}
                   color={color}
                 />
@@ -157,13 +159,20 @@ export default function BarmanLayout({
             />
           );
         }}
-        activeColor="#e63946"
-        inactiveColor="#555"
+        activeColor="#457b9d"
+        inactiveColor="#999"
+        theme={{
+          colors: {
+            secondaryContainer: 'transparent',
+          },
+        }}
         barStyle={{
-          backgroundColor: '#fff',
+          backgroundColor: '#f6f6f6',
           height: 70,
           marginBottom: 5,
-          marginHorizontal: 15,
+          paddingHorizontal: 15,
+          borderTopColor: '#457b9d',
+          borderTopWidth: 1,
         }}
       />
     </View>
@@ -171,7 +180,7 @@ export default function BarmanLayout({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#f6f6f6' },
   content: { flex: 1 },
   switchIcon: {
     margin: 0,

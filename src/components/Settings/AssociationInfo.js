@@ -175,7 +175,7 @@ export default function AssociationInfo({ user }) {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#e63946" />
+        <ActivityIndicator size="large" color="#457b9d" />
         <Text style={styles.loadingText}>Chargement...</Text>
       </View>
     );
@@ -194,6 +194,11 @@ export default function AssociationInfo({ user }) {
             onChangeText={setAssociationName}
             mode="outlined"
             style={styles.input}
+            theme={{
+              colors: {
+                primary: '#457b9d',
+              },
+            }}
           />
 
           <TextInput
@@ -204,6 +209,11 @@ export default function AssociationInfo({ user }) {
             multiline
             numberOfLines={2}
             style={styles.input}
+            theme={{
+              colors: {
+                primary: '#457b9d',
+              },
+            }}
           />
 
           <TextInput
@@ -215,6 +225,11 @@ export default function AssociationInfo({ user }) {
             style={styles.input}
             placeholder="01 23 45 67 89"
             left={<TextInput.Icon icon="phone" />}
+            theme={{
+              colors: {
+                primary: '#457b9d',
+              },
+            }}
           />
 
           <Divider style={styles.divider} />
@@ -235,7 +250,7 @@ export default function AssociationInfo({ user }) {
             loading={saving}
             disabled={saving || !hasChanges()}
             style={styles.saveButton}
-            buttonColor="#e63946"
+            buttonColor="#457b9d"
           >
             Enregistrer les modifications
           </Button>
@@ -273,7 +288,11 @@ export default function AssociationInfo({ user }) {
 
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Membre depuis</Text>
-            <Chip mode="outlined" style={styles.chip}>
+            <Chip
+              mode="outlined"
+              style={styles.chip}
+              textStyle={styles.chipText}
+            >
               {calculateAnciennete(createdAt)}
             </Chip>
           </View>
@@ -362,7 +381,7 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#e63946',
+    color: '#457b9d',
     marginBottom: 4,
   },
   statLabel: {
@@ -382,5 +401,11 @@ const styles = StyleSheet.create({
   },
   chip: {
     backgroundColor: '#fff',
+    borderColor: '#457b9d',
+    borderWidth: 1,
+  },
+  chipText: {
+    color: '#457b9d',
+    fontWeight: '600',
   },
 });
